@@ -13,7 +13,7 @@ from typing import List, Tuple, Optional, Dict
 from sentence_transformers import SentenceTransformer
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 from groq import Groq
-
+from css.py import UI_CSS 
 try:
    import faiss
 except Exception:

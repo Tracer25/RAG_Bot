@@ -1,0 +1,2 @@
+'[Errno 8] nodename nor servname provided, or not known' thrown while requesting HEAD https://huggingface.co/intfloat/e5-large-v2/resolve/main/./config_sentence_transformers.json
+Retrying in 1s [Retry 1/5].

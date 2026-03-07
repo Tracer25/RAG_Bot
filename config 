@@ -1,0 +1,9 @@
+Include /Users/jonathannebiyu/.colima/ssh_config
+Host github.com-tracer
+  HostName github.com
+  User git
+  IdentityFile ~/.ssh/id_ed25519_tracer
+  AddKeysToAgent yes
+  UseKeychain yes
+  IdentitiesOnly yes
+
