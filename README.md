@@ -13,10 +13,10 @@ This is a Gradio server, not a Vercel serverless app. Vercel does not run the lo
 
 Deploy it on Hugging Face Spaces:
 
-1. Create a new Space and select **Gradio** as the SDK.
-2. Connect the Space to this GitHub repository and select the branch you want to deploy.
+1. Create a **public** Space and select **Gradio** as the SDK.
+2. Sync this repository's files to the Space repository. To deploy automatically on GitHub pushes, configure Hugging Face's [GitHub Actions sync](https://huggingface.co/docs/hub/spaces-github-actions); otherwise, push the files to the Space's Git repository.
 3. Keep `app.py` as the app file. The Space reads Python dependencies from `requirements.txt` and system packages from `packages.txt`.
-4. In the Space settings, add `GROQ_API_KEY` as a secret.
+4. In the Space settings, add `GROQ_API_KEY` as a secret. For GitHub Actions sync, also add an `HF_TOKEN` GitHub Actions secret with write access to the Space.
 
 The app binds to `0.0.0.0` and uses the platform-provided `PORT` value, defaulting to Gradio's port `7860`.
 
