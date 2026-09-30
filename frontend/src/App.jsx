@@ -41,7 +41,7 @@ function normalizeUrl(value) {
 }
 
 function getInitialUrl() {
-  return import.meta.env.VITE_GRADIO_URL || `${window.location.origin}/api`;
+  return import.meta.env.VITE_GRADIO_URL || "";
 }
 
 function App() {
