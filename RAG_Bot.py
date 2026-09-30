@@ -13,16 +13,22 @@ from typing import List, Tuple, Optional, Dict
 from sentence_transformers import SentenceTransformer
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 from groq import Groq
-from css.py import UI_CSS 
+from css import UI_CSS
 try:
    import faiss
 except Exception:
    faiss = None
 
+from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv(Path.home() / ".config/ragbot/.env")
+
 #Configuration section
 
-EMBED_MODEL_NAME = "intfloat/e5-large-v2"
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
+EMBED_MODEL_NAME = "intfloat/e5-large-v2"
+
 
 device = 'cuda' if torch.cuda.is_available () else 'cpu'
 print(f"Using device:{device}")
@@ -61,7 +67,7 @@ def generate(prompt: str) -> str:
         return "Error generating response: GROQ_API_KEY is not set."
     try:
         response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="openai/gpt-oss-120b",
             messages=[
                 {
                     "role": "system",
@@ -69,8 +75,8 @@ def generate(prompt: str) -> str:
                 },
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.1,
-            max_tokens=512,
+            max_completion_tokens=512,
+            reasoning_effort="low",
         )
         return response.choices[0].message.content.strip()
     except Exception as e:
@@ -361,6 +367,9 @@ def chat_fn(message, history, k, doc_filter, auto_route):
    #performs semantic retrieval over chunks
    try:
        results = retriever.search(message, int(k), filter_doc_type=active_filter)
+       if not results and route_note.startswith("auto->") and active_filter != "All":
+           results = retriever.search(message, int(k), filter_doc_type="All")
+           route_note += ", fallback->all"
    except Exception as e:
        history += [
            {"role": "user", "content": message},
@@ -480,6 +489,12 @@ UI_CSS = """
 # UI layer (layout containers)
 with gr.Blocks(
    title="Mortgage RAG Chatbot",
+    theme=gr.themes.Soft(
+         primary_hue="teal",
+         secondary_hue="blue",
+         neutral_hue="stone",
+    ),
+    css=UI_CSS,
 ) as demo:
    with gr.Column(elem_id="title-wrap"):
        gr.Markdown("## Mortgage RAG Assistant")
@@ -487,7 +502,7 @@ with gr.Blocks(
 
    with gr.Row():
        with gr.Column(scale=2, elem_classes=["panel"]):
-           chatbot = gr.Chatbot(height=520, elem_id="chat-box", buttons=["copy"])
+           chatbot = gr.Chatbot(type="messages", height=520, elem_id="chat-box", show_copy_button=True)
            user_input = gr.Textbox(
                placeholder="Ask about rates, fees, purchase price, balances, or deed details...",
                label="Question",
@@ -541,12 +556,6 @@ with gr.Blocks(
 LAUNCH_KWARGS = dict(
    debug=True,
    server_name="127.0.0.1",
-   theme=gr.themes.Soft(
-       primary_hue="teal",
-       secondary_hue="blue",
-       neutral_hue="stone",
-   ),
-   css=UI_CSS,
 )
 
 
