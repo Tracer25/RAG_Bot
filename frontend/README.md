@@ -1,6 +1,6 @@
 # Mortgage RAG Frontend
 
-This Vite/React app is a static frontend for the repository's existing Gradio application. It calls the `index_pdfs` and `chat_fn` Gradio API actions through `@gradio/client`. It does not include or replace the Python backend.
+This Vite/React app calls the existing Gradio `index_pdfs` and `chat_fn` actions through `@gradio/client`. The root `vercel.json` defines the Vercel Services deployment: the frontend is public at `/`, and the Python/Gradio service is public at `/api`.
 
 ## Run locally
 
@@ -10,21 +10,22 @@ npm install
 npm run dev
 ```
 
-Open the settings button in the app and enter the base URL of a running, publicly reachable Gradio backend. To preconfigure the URL, create `frontend/.env.local`:
+For local development with a separately running Gradio backend, open the settings button and enter its public base URL. You can also preconfigure an external backend in `frontend/.env.local`:
 
 ```dotenv
 VITE_GRADIO_URL=https://your-gradio-backend.example.com
 ```
 
-## Deploy the frontend to Vercel
+## Deploy to Vercel
 
-1. Import this repository in Vercel.
-2. Set the project **Root Directory** to `frontend`.
-3. Add `VITE_GRADIO_URL` with the public base URL of your Gradio backend, then deploy.
+1. Import this repository into a Vercel project with Services enabled.
+2. Keep the project root at the repository root so Vercel reads `vercel.json`.
+3. Add `GROQ_API_KEY` to the Vercel project environment for the Python service.
+4. Deploy. The React client uses the same deployment's `/api` path by default; set `VITE_GRADIO_URL` only if you intentionally use a different backend URL.
 
-Vercel serves only the built frontend. The Gradio backend must run separately on a host that supports the app's Python, model, and system dependencies. Hugging Face Spaces is not required; use a suitable Python/container host such as a VM or a container service. Keep `GROQ_API_KEY` on the backend and never add it as a `VITE_` variable.
+The browser calls `/api` through the public rewrite, so there is no service binding: Vercel bindings are available to server-side functions, while this Vite app makes its Gradio requests in the browser. The backend is public under `/api`; the frontend handles all other paths.
 
-The browser connects directly to Gradio. The backend must be reachable over HTTPS from the deployed Vercel site, and its host must allow browser requests from that site. Uploaded PDFs and the in-memory index remain on the backend; the current Python app keeps its index in process memory, so a backend restart clears it.
+**Runtime limitation:** the Python app stores the indexed documents in process memory, and loads a large embedding model and ML dependencies. Vercel Functions can run multiple ephemeral instances, so an upload and a later question are not guaranteed to reach the same in-memory index; model downloads, package size, and memory limits may also prevent a reliable deployment. The service routing is configured, but this stateful RAG backend may need a persistent Python/container host for dependable use. Hugging Face Spaces is not required.
 
 ## Build
 
